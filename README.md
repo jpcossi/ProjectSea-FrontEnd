@@ -25,6 +25,8 @@ Antes de iniciar, é necessário ter os seguintes programas instalados:
 - Maven (para gerenciamento de dependências do backend)
 - MySQL (para o banco de dados)
 - VSCode ou qualquer editor de código de sua preferência
+- SpringBoot versao 3.3.5
+
 
 
 ## Instruções de Inicialização
