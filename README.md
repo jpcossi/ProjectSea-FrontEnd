@@ -1,50 +1,73 @@
-# React + TypeScript + Vite
+# Projeto Sea-FrontEnd
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este projeto consiste em um sistema de frontend e backend desenvolvido para gerenciar cadastro de usuários com funções de editar, deletar, adicionar e visualiza-los. Existem dois tipos de contas que são "usuário admin" e "usuário padrão". Dentro da aplicação é possivel cadastrar contas usuarios padrao ou admin na pagina de Login. Os usuários cadastrados como admin podem editar, deletar , visualizar uma lista de todos os usuarios e visualizar usuários especificos para ter informações mais detalhadas.
 
-Currently, two official plugins are available:
+Tecnologias Utilizadas
+Backend: Java, Spring Boot, Maven, Spring Security, MySQL, JWT, Hibernate
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+Frontend: JavaScript, TypeScript, React, Node, Axios, ShadCN UI, TailwindCSS, Vite, ViaCEP
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Sumário
+- Pré-requisitos
+- Instruções de Inicialização
 
-- Configure the top-level `parserOptions` property like this:
+## Pré-requisitos
+Antes de iniciar, é necessário ter os seguintes programas instalados:
 
+- Node.js e npm (para gerenciar pacotes do frontend)
+- Java (JDK 17 ou superior)
+- Maven (para gerenciamento de dependências do backend)
+- MySQL (para o banco de dados)
+- VSCode ou qualquer editor de código de sua preferência
+
+
+## Instruções de Inicialização
+### Backend
+Observação: O projeto já tem um banco de dados usando o Aiaven com os dois cadastros solicitados, a abordagem abaixo seria para crir localmente. 
+1. Configurar o Banco de Dados MySQL:
+Crie um banco de dados no MySQL com o nome desejado e configure o arquivo application.properties (localizado em src/main/resources) com as informações do banco:
 ```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+spring.datasource.url=jdbc:mysql://localhost:3306/[NOME_DO_BANCO]
+spring.datasource.username=[SEU_USUARIO]
+spring.datasource.password=[SUA_SENHA]
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
 ```
+2. Inicializar o Backend:
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
+- Abra o terminal e navegue até o diretório do projeto backend.
+- Execute o comando Maven para baixar as dependências:
 ```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+mvn clean install
 ```
+- Em seguida, inicie o servidor com:
+```js
+mvn spring-boot:run
+```
+- O backend estará disponível em http://localhost:8080.
+3. Testar a Autenticação:
+  O projeto utiliza JWT para autenticação. Para realizar login, você pode acessar o endpoint /auth/login e obter um token para acessar os demais endpoints protegidos.
+
+
+## Frontend
+1. Configurar o Ambiente:
+
+- Navegue até o diretório do projeto frontend no terminal.
+- Instale as dependências necessárias:
+```js
+npm install
+```
+2. Iniciar o Frontend:
+
+- No terminal, execute:
+```js
+npm run dev
+```
+- O frontend estará acessível em http://localhost:5173 (ou outra porta especificada).
+
+## Uso
+Após iniciar ambos os servidores, você poderá acessar a aplicação no navegador através da URL do frontend (http://localhost:5173). Siga os passos para realizar login e testar as funcionalidades conforme o propósito do projeto.
+
+## Contato
+Em caso de dúvidas, entre em contato comigo através de jppcossi@gmail.com.
