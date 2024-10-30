@@ -1,8 +1,11 @@
 # Projeto Sea
 
-Este projeto consiste em um sistema de frontend e backend desenvolvido para gerenciar cadastro de usuários com funções de editar, deletar, adicionar e visualiza-los. Existem dois tipos de contas que são "usuário admin" e "usuário padrão". Dentro da aplicação é possivel cadastrar contas usuarios padrao ou admin na pagina de Login. Os usuários cadastrados como admin podem editar, deletar , visualizar uma lista de todos os usuarios e visualizar usuários especificos para ter informações mais detalhadas.
+Este projeto consiste em um sistema de gerenciamento de usuários com funções para cadastro, edição, deleção e visualização de usuários. Há dois tipos de contas: "usuário admin" e "usuário padrão". Dentro da aplicação, é possível cadastrar contas de usuários padrão ou admin na página de login. Os usuários cadastrados como admin têm permissões adicionais, como:
 
-Tecnologias Utilizadas
+- Editar, deletar e visualizar uma lista de todos os usuários
+- Visualizar detalhes de usuários específicos
+
+## Tecnologias Utilizadas
 Backend: Java, Spring Boot, Maven, Spring Security, MySQL, JWT, Hibernate
 
 
@@ -24,7 +27,7 @@ Antes de iniciar, é necessário ter os seguintes programas instalados:
 
 ## Instruções de Inicialização
 ### Backend
-Observação: O projeto já tem um banco de dados usando o Aiaven com os dois cadastros solicitados, a abordagem abaixo seria para crir localmente. 
+Observação: O projeto já tem um banco de dados usando o Aiaven com os dois cadastros solicitados, as instruções a seguir são para configurar o banco localmente, caso necessário. 
 1. Configurar o Banco de Dados MySQL:
 Crie um banco de dados no MySQL com o nome desejado e configure o arquivo application.properties (localizado em src/main/resources) com as informações do banco:
 ```js
@@ -65,6 +68,13 @@ npm install
 npm run dev
 ```
 - O frontend estará acessível em http://localhost:5173 (ou outra porta especificada).
+
+
+## Funcionalidades
+- Cadastro de Usuários: Adicione novos usuários, especificando se são "admin" ou "usuário padrão".
+- Gerenciamento de Usuários: Usuários com perfil admin podem editar, visualizar e deletar outros usuários.
+- Autenticação JWT: A aplicação utiliza autenticação com JWT para proteger endpoints sensíveis.
+- Consulta de Endereço via CEP: Implementação de consulta de endereço usando o ViaCEP
 
 ## Uso
 Após iniciar ambos os servidores, você poderá acessar a aplicação no navegador através da URL do frontend (http://localhost:5173). Siga os passos para realizar login e testar as funcionalidades conforme o propósito do projeto.
