@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { api } from "../services/api";
 import { AuthContext } from "./AuthContext";
 import { toast } from "react-toastify";
@@ -16,38 +17,38 @@ interface ILoginResponse {
 export function AuthProvider({ children }: IAuthProviderProps) {
   const [data, setData] = useState<ILoginResponse["data"]>();
 
-  async function signIn({
-    login,
-    password,
-  }: {
-    login: string;
-    password: string;
-  }) {
-    try {
-      const response: ILoginResponse = await api.post("/auth/login", {
-        login,
-        password,
-      });
-      if (!response.data) return;
-      const { user, token } = response.data;
-      localStorage.setItem("@Sea:user", JSON.stringify(user));
-      localStorage.setItem("@Sea:token", token as string);
+  const signIn = useCallback(
+    async ({ login, password }: { login: string; password: string }) => {
+      try {
+        const response: ILoginResponse = await api.post("/auth/login", {
+          login,
+          password,
+        });
+        if (!response.data) return;
 
-      setData({ ...data, user, token });
-    } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data);
-      } else {
-        toast.error("Não foi possível entrar.");
+        const { user, token } = response.data;
+
+        localStorage.setItem("@Sea:user", JSON.stringify(user));
+        localStorage.setItem("@Sea:token", token as string);
+
+        setData({ ...data, user, token });
+      } catch (error: any) {
+        if (error.response) {
+          toast.error(error.response.data);
+        } else {
+          toast.error("Não foi possível entrar.");
+        }
       }
-    }
-  }
+    },
+    [data]
+  );
 
-  function signOut() {
+  const signOut = useCallback(() => {
     localStorage.removeItem("@Sea:user");
     localStorage.removeItem("@Sea:token");
+
     setData({ ...data, user: null });
-  }
+  }, [data]);
 
   useEffect(() => {
     const user = localStorage.getItem("@Sea:user");
@@ -60,9 +61,10 @@ export function AuthProvider({ children }: IAuthProviderProps) {
     }
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ signIn, signOut, user: data?.user }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ signIn, signOut, user: data?.user }),
+    [data, signIn, signOut]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

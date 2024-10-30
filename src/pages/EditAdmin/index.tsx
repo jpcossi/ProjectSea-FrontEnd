@@ -1,33 +1,22 @@
-import { useEffect, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import { api } from "../../services/api";
 import { User } from "../../@types/user.ts";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select.tsx";
 import { Button } from "../../components/ui/button.tsx";
 import { Card } from "../../components/ui/Card.tsx";
 import { toast } from "react-toastify";
 import { Input } from "../../components/ui/Input.tsx";
-import { applyPhoneMask } from "../../utils/applyPhoneMask.ts";
 import { applyCpfMask } from "../../utils/applyCpfMask.ts";
 import { applyCepMask } from "../../utils/applyCepMask.ts";
 import { removeMask } from "../../utils/removeMask.ts";
 import { validateCep } from "../../utils/validateCep.ts";
 import { validateName } from "../../utils/validateName.ts";
 import { validateCpf } from "../../utils/validateCpf.ts";
-
-interface IUserResponse {
-  data: User;
-}
+import { getUserById } from "../../services/getUserById.ts";
+import { PhoneField } from "./PhoneField.tsx";
+import { EmailField } from "./EmailField.tsx";
 
 interface ViaCepResponse {
   logradouro: string;
@@ -74,6 +63,13 @@ export function EditAdmin() {
 
   const [emails, setEmails] = useState([{ email: "" }]);
   const [emailError, setEmailError] = useState("");
+
+  const unmaskedCpf = useMemo(() => {
+    return removeMask(cpf);
+  }, [cpf]);
+  const unmaskedCep = useMemo(() => {
+    return removeMask(cep);
+  }, [cep]);
 
   const params = useParams();
 
@@ -135,76 +131,81 @@ export function EditAdmin() {
   };
 
   const handleCepBlur = () => {
-    const unmaskedCep = removeMask(cep);
-    if (unmaskedCep == "") {
+    const cepValidated = validateCep(unmaskedCep);
+
+    if (!cepValidated) {
+      setCepError("CEP inválido! Insira um CEP com 8 dígitos.");
       return;
     }
-    if (unmaskedCep.length === 8) {
-      fetchAddress(unmaskedCep);
-    } else {
-      //toast.error("CEP inválido! Insira um CEP com 8 dígitos.");
+
+    fetchAddress(unmaskedCep);
+  };
+
+  const validateFields = () => {
+    const nameValidated = validateName(name);
+    const cepValidated = validateCep(unmaskedCep);
+    const cpfValidated = validateCpf(unmaskedCpf);
+
+    if (password == "") {
+      setPasswordError("Preencha o campo senha!");
+      return 0;
+    }
+
+    if (login == "") {
+      setLoginError("Preencha o campo login!");
+      return 0;
+    }
+
+    if (logradouro == "") {
+      setLogradouroError("Preencha o campo login!");
+      return 0;
+    }
+
+    if (bairro == "") {
+      setBairroError("Preencha o campo Bairro!");
+      return 0;
+    }
+
+    if (cidade == "") {
+      setCidadeError("Preencha o campo Cidade!");
+      return 0;
+    }
+
+    if (uf == "") {
+      setUfError("Preencha o campo Uf!");
+      return 0;
+    }
+
+    if (phones.some((p) => !p.telefone)) {
+      setPhoneError("Preencha o campo telefone!");
+      return 0;
+    }
+
+    if (emails.some((e) => !e.email)) {
+      setEmailError("Preencha o campo email!");
+      return 0;
+    }
+
+    if (cepValidated?.error) {
+      setCepError(cepValidated.message);
+      return 0;
+    }
+
+    if (nameValidated?.error) {
+      setNameError(nameValidated.message);
+      return 0;
+    }
+
+    if (cpfValidated?.error) {
+      setCpfError(cpfValidated.message);
+      return 0;
     }
   };
 
   async function handleUpdateUser(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const unmaskedCpf = removeMask(cpf);
-    const unmaskedCep = removeMask(cep);
-
-    const cepValidated = validateCep(cep);
-    const nameValidated = validateName(name);
-    const cpfValidated = validateCpf(name);
-
-    console.log(event);
-
-    if (password == "") {
-      setPasswordError("Preencha o campo senha!");
-    }
-
-    if (login == "") {
-      setLoginError("Preencha o campo login!");
-    }
-
-    if (logradouro == "") {
-      setLogradouroError("Preencha o campo login!");
-    }
-
-    if (cpf == "") {
-      setCpfError("Preencha o campo cpf!");
-    }
-
-    if (bairro == "") {
-      setBairroError("Preencha o campo Bairro!");
-    }
-
-    if (cidade == "") {
-      setCidadeError("Preencha o campo Cidade!");
-    }
-
-    if (uf == "") {
-      setUfError("Preencha o campo Uf!");
-    }
-
-    if (phones.some((p) => !p.telefone)) {
-      setPhoneError("Preencha o campo telefone!");
-    }
-
-    if (emails.some((e) => !e.email)) {
-      setEmailError("Preencha o campo email!");
-    }
-
-    if (cepValidated?.error) {
-      setCepError(cepValidated.message);
-    }
-
-    if (nameValidated?.error) {
-      setNameError(nameValidated.message);
-    }
-
-    if (cpfValidated?.error) {
-      setCpfError(cpfValidated.message);
-    }
+    if (!validateFields()) return;
 
     const user = {
       login,
@@ -224,24 +225,27 @@ export function EditAdmin() {
       await api.put(`/admin/user/${params.id}/update`, user);
       navigate("/");
     } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data.message);
+      if (error?.response) {
+        console.error(error?.response?.data?.message);
       }
     }
   }
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const response: IUserResponse = await api.get(`/user/${params.id}`);
-        setUser(response.data);
-        setPhones(response.data.phoneNumbers);
-        setEmails(response.data.emails);
-      } catch (error) {
-        console.log("error: ", error);
-      }
+  const getUser = async () => {
+    try {
+      const user = await getUserById(params.id as string);
+      if (!user) return;
+
+      setUser(user);
+      setPhones(user.phoneNumbers);
+      setEmails(user.emails);
+    } catch (error) {
+      console.log("error: ", error);
     }
-    fetchUser();
+  };
+
+  useEffect(() => {
+    getUser();
   }, []);
 
   return (
@@ -268,6 +272,7 @@ export function EditAdmin() {
                   id="login"
                   type="text"
                   placeholder={user?.login}
+                  error={loginError}
                   onChange={(e) => setLogin(e.target.value)}
                 />
               </div>
@@ -276,6 +281,7 @@ export function EditAdmin() {
                 <Input
                   id="senha"
                   type="text"
+                  error={passwordError}
                   placeholder={user?.password ?? "senha"}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -297,7 +303,7 @@ export function EditAdmin() {
                   id="cpf"
                   type="text"
                   error={cpfError}
-                  placeholder={user?.cpf}
+                  placeholder={user?.cpf ?? "000.000.000-00"}
                   value={applyCpfMask(cpf)}
                   onChange={(e) => setCpf(applyCpfMask(e.target.value))}
                 />
@@ -310,7 +316,7 @@ export function EditAdmin() {
                   value={cep}
                   id="cep"
                   type="text"
-                  placeholder={user?.cep}
+                  placeholder={user?.cep ?? "Ex: 00000-000"}
                   error={cepError}
                   onChange={(e) => setCep(applyCepMask(e.target.value))}
                   onBlur={handleCepBlur}
@@ -322,6 +328,7 @@ export function EditAdmin() {
                   id="logradouro"
                   type="text"
                   placeholder={user?.logradouro}
+                  error={logradouroError}
                   value={logradouro}
                   onChange={(e) => setLogradouro(e.target.value)}
                 />
@@ -331,7 +338,8 @@ export function EditAdmin() {
                 <Input
                   id="bairro"
                   type="text"
-                  placeholder={user?.bairro}
+                  error={bairroError}
+                  placeholder={user?.bairro ?? "Bairro"}
                   value={bairro}
                   onChange={(e) => setBairro(e.target.value)}
                 />
@@ -341,7 +349,8 @@ export function EditAdmin() {
                 <Input
                   id="cidade"
                   type="text"
-                  placeholder={user?.cidade}
+                  error={cidadeError}
+                  placeholder={user?.cidade ?? "Cidade"}
                   value={cidade}
                   onChange={(e) => setCidade(e.target.value)}
                 />
@@ -351,6 +360,7 @@ export function EditAdmin() {
                 <Input
                   id="uf"
                   type="text"
+                  error={ufError}
                   placeholder={user?.uf}
                   value={uf}
                   onChange={(e) => setUf(e.target.value)}
@@ -370,52 +380,14 @@ export function EditAdmin() {
               <div className="flex flex-col justify-start py-2 gap-3 items-center">
                 <div className="flex flex-col gap-2 py-5 px-12">
                   {phones.map((phone, index) => (
-                    <div
-                      className="flex flex-row gap-6 items-center"
-                      key={index}
-                    >
-                      <label htmlFor="phone">Telefone:</label>
-                      <label htmlFor={`tipo-${index}`}>
-                        <Select
-                          onValueChange={(e) =>
-                            handlePhoneChange(index, "tipo", e)
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Selecione um tipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Tipos de telefone</SelectLabel>
-                              <SelectItem value="Celular">Celular</SelectItem>
-                              <SelectItem value="Residencial">
-                                Residencial
-                              </SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </label>
-
-                      <Input
-                        type="text"
-                        placeholder="Telefone"
-                        value={applyPhoneMask(phone.telefone, phone.tipo)}
-                        onChange={(e) =>
-                          handlePhoneChange(
-                            index,
-                            "telefone",
-                            applyPhoneMask(e.target.value, phone.tipo)
-                          )
-                        }
-                      />
-
-                      <Button
-                        onClick={() => handleRemovePhone(index)}
-                        type="button"
-                      >
-                        Remover
-                      </Button>
-                    </div>
+                    <PhoneField
+                      key={`phone ${index + 1}`}
+                      index={index}
+                      phone={phone}
+                      handleRemovePhone={handleRemovePhone}
+                      phoneError={phoneError}
+                      handlePhoneChange={handlePhoneChange}
+                    />
                   ))}
                 </div>
                 <div className="mr-8">
@@ -428,22 +400,14 @@ export function EditAdmin() {
             <Card className=" flex flex-col justify-center gap-2 py-10 px-12">
               <div className="flex flex-col gap-2 py-5 px-12">
                 {emails.map((email, index) => (
-                  <div className="flex flex-row gap-4 items-center" key={index}>
-                    <label htmlFor="email">Email:</label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Email"
-                      value={email.email}
-                      onChange={(e) => handleEmailChange(index, e.target.value)}
-                    />
-                    <Button
-                      onClick={() => handleRemoveEmail(index)}
-                      type="button"
-                    >
-                      Remover
-                    </Button>
-                  </div>
+                  <EmailField
+                    key={`email ${index + 1}`}
+                    email={email}
+                    index={index}
+                    emailError={emailError}
+                    handleRemoveEmail={handleRemoveEmail}
+                    handleEmailChange={handleEmailChange}
+                  />
                 ))}
 
                 <div className="flex justify-center mt-12 items-center gap-4">

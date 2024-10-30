@@ -1,20 +1,15 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { api } from "../../services/api";
-import { toast } from "react-toastify";
 import { User } from "../../@types/user.ts";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/button";
 import { applyCpfMask } from "../../utils/applyCpfMask.ts";
 import { applyCepMask } from "../../utils/applyCepMask.ts";
 import { applyPhoneMask } from "../../utils/applyPhoneMask.ts";
+import { getUserById } from "../../services/getUserById.ts";
 
 type UserStorage = { name: string; role: string; id: number } | undefined;
-
-interface IUserResponse {
-  data: User;
-}
 
 export function UserHome() {
   const { signOut } = useAuth();
@@ -30,23 +25,27 @@ export function UserHome() {
     navigate("/");
   };
 
-  useEffect(() => {
-    async function fetchUser() {
-      const storageUser = localStorage.getItem("@Sea:user");
-      console.log(storageUser);
-      if (!storageUser) {
-        return;
-      }
-      const user: UserStorage = JSON.parse(storageUser);
-      try {
-        const response: IUserResponse = await api.get(`/user/${user?.id}`);
-        setUser(response?.data);
-        setPhones(response?.data.phoneNumbers);
-        setEmails(response?.data.emails);
-      } catch (error) {
-        toast.error("Falha ao buscar usuario");
-      }
+  async function fetchUser() {
+    const storageUser = localStorage.getItem("@Sea:user");
+
+    if (!storageUser) return;
+
+    const user: UserStorage = JSON.parse(storageUser);
+
+    try {
+      const response = await getUserById(`${user?.id}`);
+      if (!response) return;
+
+      setUser(response);
+      setPhones(response?.phoneNumbers);
+      setEmails(response?.emails);
+    } catch (error) {
+      // toast.error("Falha ao buscar usuario");
+      console.error(error);
     }
+  }
+
+  useEffect(() => {
     fetchUser();
   }, []);
 

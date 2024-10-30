@@ -11,6 +11,7 @@ import {
   CardFooter,
 } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
+import { Link } from "react-router-dom";
 
 function LoginContainer({
   className,
@@ -75,10 +76,15 @@ export function SignIn() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-2 w-full">
               <Button className="w-full" type="submit">
                 Entrar
               </Button>
+              <Link className="w-full" to="/new">
+                <Button variant="secondary" className="w-full" type="submit">
+                  Registrar
+                </Button>
+              </Link>
             </CardFooter>
           </form>
         </Card>

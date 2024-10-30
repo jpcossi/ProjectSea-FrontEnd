@@ -1,21 +1,20 @@
-import { Input as ShadInput } from "./Input";
 import { InputHTMLAttributes } from "react";
+import { ShadInput } from "./ShadInput";
 
-interface InputCpomponentProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputComponentProps
+  extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
-export function Input({
-  id,
-  value,
-  error,
-  onChange,
-  ...rest
-}: InputCpomponentProps) {
+export function Input({ value, error, ...rest }: InputComponentProps) {
   return (
-    <>
+    <div className="flex flex-col gap-1 w-full relative">
       <ShadInput value={value} {...rest} />
-      <span className="text-destructive">{error}</span>
-    </>
+      {error && (
+        <span className=" absolute bottom-[-1.2rem] text-destructive text-[10px] whitespace-nowrap">
+          {error}
+        </span>
+      )}
+    </div>
   );
 }

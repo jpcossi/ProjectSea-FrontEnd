@@ -1,18 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
-import { api } from "../../services/api";
-import { toast } from "react-toastify";
 import { User } from "../../@types/user.ts";
 import { Button } from "../../components/ui/button.tsx";
 import { Card } from "../../components/ui/Card.tsx";
 import { applyCepMask } from "../../utils/applyCepMask.ts";
 import { applyCpfMask } from "../../utils/applyCpfMask.ts";
 import { applyPhoneMask } from "../../utils/applyPhoneMask.ts";
-
-interface IUserResponse {
-  data: User;
-}
+import { getUserById } from "../../services/getUserById.ts";
 
 export function ShowUserAdmin() {
   const [user, setUser] = useState<User>();
@@ -24,12 +19,15 @@ export function ShowUserAdmin() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response: IUserResponse = await api.get(`/user/${params?.id}`);
-        setUser(response?.data);
-        setPhones(response?.data.phoneNumbers);
-        setEmails(response?.data.emails);
-      } catch (error) {
-        toast.error("Falha ao buscar usuario");
+        const userData = await getUserById(params.id as string);
+        if (!userData) return;
+
+        setUser(userData);
+        setPhones(userData.phoneNumbers);
+        setEmails(userData.emails);
+      } catch (error: any) {
+        // toast.error("Falha ao buscar usuario");
+        console.error(error);
       }
     }
     fetchUser();

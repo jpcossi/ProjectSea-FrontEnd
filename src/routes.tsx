@@ -1,3 +1,4 @@
+import { ISignInUser } from "./hooks/AuthContext";
 import { CreateUser } from "./pages/CreateUser";
 import { EditAdmin } from "./pages/EditAdmin";
 import { HomeAdmin } from "./pages/HomeAdmin";
@@ -5,8 +6,8 @@ import { ShowUserAdmin } from "./pages/ShowUserAdmin";
 import { SignIn } from "./pages/SignIn";
 import { UserHome } from "./pages/UserHome";
 
-export const appRoutes = (userRole: string) =>
-  userRole === "admin"
+export const appRoutes = (user?: ISignInUser | null) =>
+  user?.role === "admin"
     ? [
         {
           path: "/",
@@ -28,13 +29,10 @@ export const appRoutes = (userRole: string) =>
     : [
         {
           path: "/",
-          element: <UserHome />,
+          element: user ? <UserHome /> : <SignIn />,
+        },
+        {
+          path: "/new",
+          element: <CreateUser />,
         },
       ];
-
-export const authRoutes = [
-  {
-    path: "/",
-    element: <SignIn />,
-  },
-];

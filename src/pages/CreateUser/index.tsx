@@ -1,20 +1,25 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import { api } from "../../services/api";
 import { Input } from "../../components/ui/Input.tsx";
 import { Card } from "../../components/ui/Card.tsx";
 import { Button } from "../../components/ui/button.tsx";
+import { applyCpfMask } from "../../utils/applyCpfMask.ts";
+import { applyCepMask } from "../../utils/applyCepMask.ts";
+import { PhoneField } from "../EditAdmin/PhoneField.tsx";
+import { validateCep } from "../../utils/validateCep.ts";
+import { validateName } from "../../utils/validateName.ts";
+import { validateCpf } from "../../utils/validateCpf.ts";
+import { EmailField } from "../EditAdmin/EmailField.tsx";
+import { removeMask } from "../../utils/removeMask.ts";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select.tsx";
+  RadioGroup,
+  RadioGroupItem,
+} from "../../components/ui/radio-group.tsx";
+import { Label } from "../../components/ui/Label.tsx";
 
 interface ViaCepResponse {
   logradouro: string;
@@ -26,18 +31,48 @@ interface ViaCepResponse {
 
 export function CreateUser() {
   const [login, setLogin] = useState("");
+  const [loginError, setLoginError] = useState("");
+
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+
   const [cpf, setCpf] = useState("");
+  const [cpfError, setCpfError] = useState("");
+
   const [cep, setCep] = useState("");
+  const [cepError, setCepError] = useState("");
+
   const [logradouro, setLogradouro] = useState("");
+  const [logradouroError, setLogradouroError] = useState("");
+
   const [bairro, setBairro] = useState("");
+  const [bairroError, setBairroError] = useState("");
+
   const [cidade, setCidade] = useState("");
+  const [cidadeError, setCidadeError] = useState("");
+
   const [uf, setUf] = useState("");
+  const [ufError, setUfError] = useState("");
+
   const [complemento, setComplemento] = useState("");
 
   const [phones, setPhones] = useState([{ tipo: "", telefone: "" }]);
+  const [phoneError, setPhoneError] = useState("");
+
   const [emails, setEmails] = useState([{ email: "" }]);
+  const [emailError, setEmailError] = useState("");
+
+  const [role, setRole] = useState<"admin" | "user">("user");
+
+  const unmaskedCpf = useMemo(() => {
+    return removeMask(cpf);
+  }, [cpf]);
+  const unmaskedCep = useMemo(() => {
+    return removeMask(cep);
+  }, [cep]);
 
   const navigate = useNavigate();
 
@@ -62,6 +97,7 @@ export function CreateUser() {
       i === index ? { ...phone, [field]: value } : phone
     );
     setPhones(updatedPhones);
+    setPhoneError("");
   }
 
   const handleEmailChange = (index: number, value: string) => {
@@ -70,46 +106,8 @@ export function CreateUser() {
     );
     console.log(updatedEmails);
     setEmails(updatedEmails);
+    setEmailError("");
   };
-
-  function applyCepMask(cep?: string) {
-    if (!cep) {
-      return "";
-    }
-    return cep
-      .replace(/\D/g, "")
-      .slice(0, 8)
-      .replace(/(\d{5})(\d{3})/, "$1-$2");
-  }
-
-  function applyCpfMask(cpf?: string) {
-    if (!cpf) {
-      return "";
-    }
-    return cpf
-      .replace(/\D/g, "")
-      .slice(0, 11)
-      .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-  }
-
-  function applyPhoneMask(phone: string, type: string) {
-    if (type === "Celular") {
-      return phone
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
-        .slice(0, 15);
-    } else if (type === "Residencial") {
-      return phone
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
-        .slice(0, 14);
-    }
-    return phone;
-  }
-
-  function removeMask(value: string) {
-    return value.replace(/\D/g, "");
-  }
 
   const fetchAddress = async (cep: string): Promise<void> => {
     try {
@@ -131,22 +129,83 @@ export function CreateUser() {
   };
 
   const handleCepBlur = () => {
-    const unmaskedCep = removeMask(cep);
-    if (unmaskedCep == "") {
+    const validatedCep = validateCep(unmaskedCep);
+
+    if (validatedCep.error) {
+      setCepError(validatedCep.message);
       return;
     }
-    if (unmaskedCep.length === 8) {
-      fetchAddress(unmaskedCep);
-    } else {
-      alert("CEP inválido! Insira um CEP com 8 dígitos.");
+
+    fetchAddress(unmaskedCep);
+  };
+
+  const validateFields = () => {
+    const nameValidated = validateName(name);
+    const cepValidated = validateCep(unmaskedCep);
+    const cpfValidated = validateCpf(unmaskedCpf);
+
+    if (password == "") {
+      setPasswordError("Preencha o campo senha!");
+      return 0;
     }
+
+    if (login == "") {
+      setLoginError("Preencha o campo login!");
+      return 0;
+    }
+
+    if (logradouro == "") {
+      setLogradouroError("Preencha o campo logradouro!");
+      return 0;
+    }
+
+    if (bairro == "") {
+      setBairroError("Preencha o campo Bairro!");
+      return 0;
+    }
+
+    if (cidade == "") {
+      setCidadeError("Preencha o campo Cidade!");
+      return 0;
+    }
+
+    if (uf == "") {
+      setUfError("Preencha o campo Uf!");
+      return 0;
+    }
+
+    if (phones.some((p) => !p.telefone)) {
+      setPhoneError("Preencha o campo telefone!");
+      return 0;
+    }
+
+    if (emails.some((e) => !e.email)) {
+      setEmailError("Preencha o campo email!");
+      return 0;
+    }
+
+    if (cepValidated?.error) {
+      setCepError(cepValidated.message);
+      return 0;
+    }
+
+    if (nameValidated?.error) {
+      setNameError(nameValidated.message);
+      return 0;
+    }
+
+    if (cpfValidated?.error) {
+      setCpfError(cpfValidated.message);
+      return 0;
+    }
+
+    return 1;
   };
 
   async function handleCreateUser(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const unmaskedCpf = removeMask(cpf);
-    const unmaskedCep = removeMask(cep);
+    if (!validateFields()) return;
 
     const user = {
       login,
@@ -161,6 +220,7 @@ export function CreateUser() {
       complemento,
       phoneNumbers: phones,
       emails: emails,
+      role: role.toUpperCase(),
     };
 
     console.log(user);
@@ -171,9 +231,6 @@ export function CreateUser() {
     } catch (error: any) {
       if (error.response) {
         console.error("Error response:", error.response);
-        alert(
-          error.response ? error.response.data.message : "Erro desconhecido"
-        );
       }
     }
   }
@@ -197,12 +254,32 @@ export function CreateUser() {
           >
             <Card className=" flex flex-col justify-center gap-2 py-10 px-12">
               <div className="flex justify-start py-2 gap-3 items-center">
+                <Label>Perfil:</Label>
+                <RadioGroup
+                  defaultValue={role}
+                  onValueChange={(value: "admin" | "user") => setRole(value)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="admin" id="admin" />
+                    <Label htmlFor="admin">Admin</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="user" id="user" />
+                    <Label htmlFor="user">Usuário</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="flex justify-start py-2 gap-3 items-center">
                 <label htmlFor="login">Usuário:</label>
                 <Input
                   id="login"
                   type="text"
                   placeholder="Minimo 3 caracteres"
-                  onChange={(e) => setLogin(e.target.value)}
+                  error={loginError}
+                  onChange={(e) => {
+                    setLogin(e.target.value);
+                    setLoginError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-6 items-center">
@@ -211,7 +288,11 @@ export function CreateUser() {
                   id="senha"
                   type="text"
                   placeholder="senha"
-                  onChange={(e) => setPassword(e.target.value)}
+                  error={passwordError}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-6 items-center">
@@ -220,7 +301,11 @@ export function CreateUser() {
                   id="name"
                   type="text"
                   placeholder="Apenas letras, espaços e numeros"
-                  onChange={(e) => setName(e.target.value)}
+                  error={nameError}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-10 items-center">
@@ -228,8 +313,12 @@ export function CreateUser() {
                 <Input
                   id="cpf"
                   placeholder="Ex: 000-000-000-00"
-                  value={cpf}
-                  onChange={(e) => setCpf(applyCpfMask(e.target.value))}
+                  error={cpfError}
+                  value={applyCpfMask(cpf)}
+                  onChange={(e) => {
+                    setCpf(applyCpfMask(e.target.value));
+                    setCpfError("");
+                  }}
                 />
               </div>
             </Card>
@@ -241,7 +330,11 @@ export function CreateUser() {
                   type="text"
                   placeholder="Ex: 00000-000"
                   value={cep}
-                  onChange={(e) => setCep(applyCepMask(e.target.value))}
+                  error={cepError}
+                  onChange={(e) => {
+                    setCep(applyCepMask(e.target.value));
+                    setCepError("");
+                  }}
                   onBlur={handleCepBlur}
                 />
               </div>
@@ -252,7 +345,11 @@ export function CreateUser() {
                   type="text"
                   placeholder="Logradouro"
                   value={logradouro}
-                  onChange={(e) => setLogradouro(e.target.value)}
+                  error={logradouroError}
+                  onChange={(e) => {
+                    setLogradouro(e.target.value);
+                    setLogradouroError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-12 items-center">
@@ -261,8 +358,12 @@ export function CreateUser() {
                   id="bairro"
                   type="text"
                   placeholder="Bairro"
+                  error={bairroError}
                   value={bairro}
-                  onChange={(e) => setBairro(e.target.value)}
+                  onChange={(e) => {
+                    setBairro(e.target.value);
+                    setBairroError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-10 items-center">
@@ -272,7 +373,11 @@ export function CreateUser() {
                   type="text"
                   placeholder="Cidade"
                   value={cidade}
-                  onChange={(e) => setCidade(e.target.value)}
+                  error={cidadeError}
+                  onChange={(e) => {
+                    setCidade(e.target.value);
+                    setCidadeError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-[70px] items-center">
@@ -282,7 +387,11 @@ export function CreateUser() {
                   type="text"
                   placeholder="UF"
                   value={uf}
-                  onChange={(e) => setUf(e.target.value)}
+                  error={ufError}
+                  onChange={(e) => {
+                    setUf(e.target.value);
+                    setUfError("");
+                  }}
                 />
               </div>
               <div className="flex justify-start py-2 gap-3 items-center">
@@ -299,52 +408,14 @@ export function CreateUser() {
               <div className="flex flex-col justify-start py-2 gap-3 items-center">
                 <div className="flex flex-col gap-2 py-5 px-12">
                   {phones.map((phone, index) => (
-                    <div
-                      className="flex flex-row gap-6 items-center"
-                      key={index}
-                    >
-                      <label htmlFor="phone">Telefone:</label>
-                      <label htmlFor={`tipo-${index}`}>
-                        <Select
-                          onValueChange={(e) =>
-                            handlePhoneChange(index, "tipo", e)
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Selecione um tipo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Tipos de telefone</SelectLabel>
-                              <SelectItem value="Celular">Celular</SelectItem>
-                              <SelectItem value="Residencial">
-                                Residencial
-                              </SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </label>
-
-                      <Input
-                        type="text"
-                        placeholder="Telefone"
-                        value={applyPhoneMask(phone.telefone, phone.tipo)}
-                        onChange={(e) =>
-                          handlePhoneChange(
-                            index,
-                            "telefone",
-                            applyPhoneMask(e.target.value, phone.tipo)
-                          )
-                        }
-                      />
-
-                      <Button
-                        onClick={() => handleRemovePhone(index)}
-                        type="button"
-                      >
-                        Remover
-                      </Button>
-                    </div>
+                    <PhoneField
+                      key={`phone ${index + 1}`}
+                      index={index}
+                      phone={phone}
+                      handleRemovePhone={handleRemovePhone}
+                      phoneError={phoneError}
+                      handlePhoneChange={handlePhoneChange}
+                    />
                   ))}
                 </div>
                 <div className="mr-8">
@@ -357,22 +428,14 @@ export function CreateUser() {
             <Card className=" flex flex-col justify-center gap-2 py-10 px-12">
               <div className="flex flex-col gap-2 py-5 px-12">
                 {emails.map((email, index) => (
-                  <div className="flex flex-row gap-4 items-center" key={index}>
-                    <label htmlFor="email">Email:</label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Email"
-                      value={email.email}
-                      onChange={(e) => handleEmailChange(index, e.target.value)}
-                    />
-                    <Button
-                      onClick={() => handleRemoveEmail(index)}
-                      type="button"
-                    >
-                      Remover
-                    </Button>
-                  </div>
+                  <EmailField
+                    key={`email ${index + 1}`}
+                    email={email}
+                    index={index}
+                    emailError={emailError}
+                    handleRemoveEmail={handleRemoveEmail}
+                    handleEmailChange={handleEmailChange}
+                  />
                 ))}
 
                 <div className="flex justify-center mt-12 items-center gap-4">

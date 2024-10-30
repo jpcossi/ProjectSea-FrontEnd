@@ -1,7 +1,7 @@
 //import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
-import { appRoutes, authRoutes } from "./routes";
+import { appRoutes } from "./routes";
 
 function App() {
   const { user } = useAuth();
@@ -10,9 +10,7 @@ function App() {
     return <div>Carregando...</div>;
   }*/
 
-  const routes = createBrowserRouter(
-    user && user.role ? appRoutes(user.role) : authRoutes
-  );
+  const routes = createBrowserRouter(appRoutes(user));
 
   return <RouterProvider router={routes}></RouterProvider>;
 }

@@ -1,5 +1,9 @@
 import { createContext } from "react";
-
+export interface ISignInUser {
+  name: string;
+  role: string;
+  id: number;
+}
 interface IAuthContextProps {
   signIn:
     | (({
@@ -11,7 +15,7 @@ interface IAuthContextProps {
       }) => Promise<void>)
     | null;
   signOut: () => void;
-  user?: { name: string; role: string; id: number } | null;
+  user?: ISignInUser | null;
 }
 
 export const AuthContext = createContext<IAuthContextProps>({
