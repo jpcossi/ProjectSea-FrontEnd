@@ -6,10 +6,10 @@ interface IUserResponse {
 }
 
 export async function getUserById(id: string) {
-    try {
-        const response: IUserResponse = await api.get(`/user/${id}`);
-        return response.data;
-    } catch (error) {
-        console.log("error: ", error);
-    }
+  try {
+    const response: IUserResponse = await api.get(`/user/${id}`);
+    return response.data;
+  } catch (error) {
+    console.log("error: ", error);
+  }
 }

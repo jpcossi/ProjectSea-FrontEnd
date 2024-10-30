@@ -104,7 +104,6 @@ export function CreateUser() {
     const updatedEmails = emails.map((email, i) =>
       i === index ? { email: value } : email
     );
-    console.log(updatedEmails);
     setEmails(updatedEmails);
     setEmailError("");
   };
@@ -223,7 +222,6 @@ export function CreateUser() {
       role: role.toUpperCase(),
     };
 
-    console.log(user);
     try {
       const response = await api.post("/auth/register", user);
       console.log("repsonse do post", response);
@@ -238,7 +236,7 @@ export function CreateUser() {
   return (
     <div className="max-w-[800px] mx-auto py-8">
       <header className="flex justify-between py-5">
-        <h1>Ola Admin, pode criar o cliente</h1>
+        <h1>Bem vindo, pode criar um novo usuário</h1>
         <Link to="/">
           <Button className="" title="Voltar">
             Voltar

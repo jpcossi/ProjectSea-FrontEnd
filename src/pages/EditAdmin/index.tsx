@@ -200,13 +200,14 @@ export function EditAdmin() {
       setCpfError(cpfValidated.message);
       return 0;
     }
+
+    return 1;
   };
 
   async function handleUpdateUser(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!validateFields()) return;
-
     const user = {
       login,
       name,
@@ -239,9 +240,7 @@ export function EditAdmin() {
       setUser(user);
       setPhones(user.phoneNumbers);
       setEmails(user.emails);
-    } catch (error) {
-      console.log("error: ", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -251,7 +250,7 @@ export function EditAdmin() {
   return (
     <div className="max-w-[800px] mx-auto py-8">
       <header className="flex justify-between py-5">
-        <h1>Ola Admin, pode editar o cliente {user?.name}</h1>
+        <h1>Ola Admin, pode editar o usuário {user?.name}</h1>
         <Link to="/">
           <Button className="" title="Voltar">
             Voltar

@@ -6,11 +6,10 @@ interface IUsersResponse {
 }
 
 export async function getUsers() {
-    try {
-        const response: IUsersResponse = await api.get(`/admin/users`);
-        console.log(response);
-        return response.data;
-    } catch (error) {
-        console.error(error);
-    }
+  try {
+    const response: IUsersResponse = await api.get(`/admin/users`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
 }
