@@ -19,7 +19,7 @@ Frontend: JavaScript, TypeScript, React, Node, Axios, ShadCN UI, TailwindCSS, Vi
 Antes de iniciar, é necessário ter os seguintes programas instalados:
 
 - Node.js e npm (para gerenciar pacotes do frontend)
-- Java (JDK 17 ou superior)
+- Java JDK 8
 - Maven (para gerenciamento de dependências do backend)
 - MySQL (para o banco de dados)
 - VSCode ou qualquer editor de código de sua preferência
