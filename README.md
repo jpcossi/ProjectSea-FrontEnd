@@ -1,4 +1,4 @@
-# Projeto Sea-FrontEnd
+# Projeto Sea
 
 Este projeto consiste em um sistema de frontend e backend desenvolvido para gerenciar cadastro de usuários com funções de editar, deletar, adicionar e visualiza-los. Existem dois tipos de contas que são "usuário admin" e "usuário padrão". Dentro da aplicação é possivel cadastrar contas usuarios padrao ou admin na pagina de Login. Os usuários cadastrados como admin podem editar, deletar , visualizar uma lista de todos os usuarios e visualizar usuários especificos para ter informações mais detalhadas.
 
