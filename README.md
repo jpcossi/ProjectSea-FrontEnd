@@ -14,6 +14,8 @@ Frontend: JavaScript, TypeScript, React, Node, Axios, ShadCN UI, TailwindCSS, Vi
 ## Sumário
 - Pré-requisitos
 - Instruções de Inicialização
+- Funcionalidades
+- Contato
 
 ## Pré-requisitos
 Antes de iniciar, é necessário ter os seguintes programas instalados:
@@ -53,7 +55,7 @@ mvn spring-boot:run
   O projeto utiliza JWT para autenticação. Para realizar login, você pode acessar o endpoint /auth/login e obter um token para acessar os demais endpoints protegidos.
 
 
-## Frontend
+### Frontend
 1. Configurar o Ambiente:
 
 - Navegue até o diretório do projeto frontend no terminal.
